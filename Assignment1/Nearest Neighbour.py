@@ -36,24 +36,23 @@ def predict(training_data, test_vector, feature_ranges, k):
 
     # get the nearest k neighbours
     distances = sorted(distances, key=lambda tup: tup[0])
+    k_neighbours = distances[0:k]
 
     # vote
-    k_neighbours = distances[0:k]
     class_votes = {}
     for x in range(k):
-        vote = k_neighbours[x][2][4]
+        vote = k_neighbours[x][1][4]
         if vote in class_votes:
             class_votes[vote] += 1
         else:
             class_votes[vote] = 1
-    sortedVotes = sorted(class_votes.items(), key=lambda tup: tup[1], reverse=True)
+    sorted_votes = sorted(class_votes.items(), key=lambda tup: tup[1], reverse=True)
 
-    #predicted_label = distances[0][2][4]
-    print(sortedVotes[0][0])
-    return sortedVotes[0][0]
+    print(sorted_votes[0][0])
+    return sorted_votes[0][0]
 
 
-def verify_prdiction(training_data, test_data, k):
+def verify_prediction(training_data, test_data, k):
     feature_ranges = []
     # Workout the ranges for each feature
     for i in range(4):
@@ -62,12 +61,13 @@ def verify_prdiction(training_data, test_data, k):
         min = sorted_training_data[0][i]
         feature_ranges.append(max - min)
 
+    # Test
     accuracy_count = 0
     for test_vector in test_data:
         prediction = predict(training_data, test_vector, feature_ranges, k)
         if prediction == test_vector[-1]:
             accuracy_count += 1
-
+    # Test accuracy in percentage
     print(accuracy_count / len(test_data))
 
 
@@ -95,5 +95,5 @@ test_data = load_data_from_file(".\iris-test.txt")
 
 # using mock test data
 #mock_test_data = [[5.0, 3.0, 1.6, 0.2, "Iris-setosa"]]
-verify_prdiction(data, test_data, 3)
+verify_prediction(data, test_data, 3)
 
