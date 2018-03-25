@@ -1,4 +1,5 @@
 import math
+import collections
 
 def read_data_file(path):
     try:
@@ -29,19 +30,21 @@ def train():
 
 
 def predict(training_data, test_vector, feature_ranges, k):
+    VectorDistance = collections.namedtuple("VectorDistance", ['distance', 'training_vector'])
+
     distances = []
 
-    for training_vector in training_data:
-        distances.append((calc_euclidean_distance(training_vector, test_vector, feature_ranges), training_vector, test_vector))
+    for t_vector in training_data:
+        distances.append(VectorDistance(calc_euclidean_distance(t_vector, test_vector, feature_ranges), t_vector))
 
     # get the nearest k neighbours
-    distances = sorted(distances, key=lambda tup: tup[0])
+    distances = sorted(distances, key=lambda tup: tup.distance)
     k_neighbours = distances[0:k]
 
     # vote
     class_votes = {}
     for x in range(k):
-        vote = k_neighbours[x][1][4]
+        vote = k_neighbours[x].training_vector[4]
         if vote in class_votes:
             class_votes[vote] += 1
         else:
