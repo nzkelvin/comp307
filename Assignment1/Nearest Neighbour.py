@@ -35,10 +35,22 @@ def predict(training_data, test_vector, feature_ranges, k):
         distances.append((calc_euclidean_distance(training_vector, test_vector, feature_ranges), training_vector, test_vector))
 
     # get the nearest k neighbours
-    sorted(distances, key=lambda tup: tup[0])
-    predicted_label = distances[0][2][4]
-    print(predicted_label)
-    return predicted_label
+    distances = sorted(distances, key=lambda tup: tup[0])
+
+    # vote
+    k_neighbours = distances[0:k]
+    class_votes = {}
+    for x in range(k):
+        vote = k_neighbours[x][2][4]
+        if vote in class_votes:
+            class_votes[vote] += 1
+        else:
+            class_votes[vote] = 1
+    sortedVotes = sorted(class_votes.items(), key=lambda tup: tup[1], reverse=True)
+
+    #predicted_label = distances[0][2][4]
+    print(sortedVotes[0][0])
+    return sortedVotes[0][0]
 
 
 def verify_prdiction(training_data, test_data, k):
@@ -50,8 +62,13 @@ def verify_prdiction(training_data, test_data, k):
         min = sorted_training_data[0][i]
         feature_ranges.append(max - min)
 
+    accuracy_count = 0
     for test_vector in test_data:
-        predict(training_data, test_vector, feature_ranges, k)
+        prediction = predict(training_data, test_vector, feature_ranges, k)
+        if prediction == test_vector[-1]:
+            accuracy_count += 1
+
+    print(accuracy_count / len(test_data))
 
 
 # Pythagorean formula
@@ -79,5 +96,4 @@ test_data = load_data_from_file(".\iris-test.txt")
 # using mock test data
 #mock_test_data = [[5.0, 3.0, 1.6, 0.2, "Iris-setosa"]]
 verify_prdiction(data, test_data, 3)
-
 
