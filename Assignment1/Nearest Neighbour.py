@@ -44,6 +44,7 @@ def predict(training_data, test_vector, feature_ranges, k):
     # vote
     class_votes = {}
     for x in range(k):
+        # training_vector[4] is the class label
         vote = k_neighbours[x].training_vector[4]
         if vote in class_votes:
             class_votes[vote] += 1
