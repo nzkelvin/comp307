@@ -223,5 +223,5 @@ def train():
     return root_node
 
 
-#train()
+# train() is included in test() now
 test()
