@@ -33,7 +33,7 @@ class Feature:
 
 class Image:
     def __init__(self):
-        self.category = None
+        self.target = None
         self.width = None
         self.height = None
         self.pixels = []
@@ -51,7 +51,7 @@ def load_data(path):
             while line:
                 if line == 'P1':
                     image = Image()
-                    image.category = 1 if datafile.readline().rstrip() == '#Yes' else 0
+                    image.target = 1 if datafile.readline().rstrip() == '#Yes' else 0
                     image.width, image.height = datafile.readline().rstrip().split()
                     pixel_string = datafile.readline().rstrip() + datafile.readline().rstrip()
                     image.pixels = textwrap.wrap(pixel_string, 10)
@@ -95,16 +95,17 @@ def train(images, weights, k):
 
     # Do not run the entire data set more than 100 times
     if k > 100:
+        print("k = " + str(k))
         return k
 
     for image in images:
         prediction = guess(image.features, weights)
-        if image.category == prediction:
+        if image.target == prediction:
             hits += 1
         else:
             # Adjust weight
             for idx in range(len(weights)):
-                weights[idx] += (prediction - image.category) * image.features[idx].input * train_rate
+                weights[idx] += (image.target - prediction) * image.features[idx].input * train_rate
 
     if hits == len(images):
         # Mission completed. All hit
@@ -128,7 +129,7 @@ def run():
 
     k = 0
     train(images, weights, k)
-    #print("k = " + str(k))
+    print(weights)
 
 
 run()
