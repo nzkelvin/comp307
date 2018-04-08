@@ -150,13 +150,13 @@ def build_tree(node):
 
 
 def print_tree(node, indentation):
-    indentation += '  '
     if node is not None:
         if 'split_value' in node:
             print(indentation + node['split_attr'].name + " = " + node['split_value'] + ", instances count = " + str(len(node['instances'])))
         if 'class' in node:
             print(indentation + "  Class " + node['class'] + ', prob = ' + str(node['prob']))
 
+        indentation += '  '
         if 'left' in node:
             # No instances means it is not node. It is just a shell which we can ignore.
             if ('instances' in node['left'] is not None) & (len(node['left']['instances']) > 0):
@@ -172,7 +172,41 @@ def print_tree(node, indentation):
 
 
 def test():
-    pass
+    file_pathes = [".\hepatitis-test-run01.dat",
+                   ".\hepatitis-test-run02.dat",
+                   ".\hepatitis-test-run03.dat",
+                   ".\hepatitis-test-run04.dat",
+                   ".\hepatitis-test-run05.dat",
+                   ".\hepatitis-test-run06.dat",
+                   ".\hepatitis-test-run07.dat",
+                   ".\hepatitis-test-run08.dat",
+                   ".\hepatitis-test-run09.dat",
+                   ".\hepatitis-test-run10.dat"]
+
+    tree = train()
+    for path in file_pathes:
+        test_dataset = load_data(path)
+
+        accuracy_count = 0
+        for row in test_dataset['instances']:
+            prediction = traverse_tree(tree, row)
+            actual = row[0]
+            # print(prediction + ' ' + actual)
+            if prediction == actual:
+                accuracy_count += 1
+
+        print("Accuracy = " + str(accuracy_count / len(test_dataset['instances'])))
+
+
+def traverse_tree(node, row):
+    if 'class' in node:
+        return node['class']
+
+    value = row[node['best_attribute'].index]
+    if (value == 'true') & ('right' in node):
+        return traverse_tree(node['right'], row)
+    elif 'left' in node:
+        return traverse_tree(node['left'], row)
 
 
 def train():
@@ -186,7 +220,8 @@ def train():
         raise Exception('There is no instance in the root node.')
 
     print_tree(root_node, '')
+    return root_node
 
 
-train()
+#train()
 test()
