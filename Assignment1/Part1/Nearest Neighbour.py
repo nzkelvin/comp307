@@ -1,5 +1,8 @@
+import sys
 import math
 import collections
+import datetime as dt
+
 
 def read_data_file(path):
     try:
@@ -72,7 +75,7 @@ def verify_prediction(training_data, test_data, k):
         if prediction == test_vector[-1]:
             accuracy_count += 1
     # Test accuracy in percentage
-    print(accuracy_count / len(test_data))
+    print("classification accuracy = " + str(accuracy_count / len(test_data)))
 
 
 # Pythagorean formula
@@ -88,8 +91,12 @@ def calc_euclidean_distance(training_vector, test_vector, feature_ranges):
 
 
 # main function
-data = load_data_from_file(".\iris-training.txt")
-test_data = load_data_from_file(".\iris-test.txt")
+training_file_path = sys.argv[1] if len(sys.argv) > 1 else ".\iris-training.txt"
+test_file_path = sys.argv[2] if len(sys.argv) > 2 else ".\iris-test.txt"
+k = int(sys.argv[3]) if len(sys.argv) > 3 else 3
+
+data = load_data_from_file(training_file_path)
+test_data = load_data_from_file(test_file_path)
 
 # view test data for debugging
 #for outer_data in data:
@@ -99,5 +106,7 @@ test_data = load_data_from_file(".\iris-test.txt")
 
 # using mock test data
 #mock_test_data = [[5.0, 3.0, 1.6, 0.2, "Iris-setosa"]]
-verify_prediction(data, test_data, 3)
-
+start_time = dt.datetime.now()
+verify_prediction(data, test_data, k)
+end_time = dt.datetime.now()
+print("Execution duration = " + str((end_time - start_time).microseconds) + "(microseconds)")
