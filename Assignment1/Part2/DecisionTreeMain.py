@@ -1,3 +1,6 @@
+import sys
+
+
 class DecisionAttribute:
     def __init__(self, index, name, usage_count):
         # self is an instance attribute(python). instance VS class
@@ -171,33 +174,6 @@ def print_tree(node, indentation):
                 return
 
 
-def test():
-    file_pathes = [".\hepatitis-test-run01.dat",
-                   ".\hepatitis-test-run02.dat",
-                   ".\hepatitis-test-run03.dat",
-                   ".\hepatitis-test-run04.dat",
-                   ".\hepatitis-test-run05.dat",
-                   ".\hepatitis-test-run06.dat",
-                   ".\hepatitis-test-run07.dat",
-                   ".\hepatitis-test-run08.dat",
-                   ".\hepatitis-test-run09.dat",
-                   ".\hepatitis-test-run10.dat"]
-
-    tree = train()
-    for path in file_pathes:
-        test_dataset = load_data(path)
-
-        accuracy_count = 0
-        for row in test_dataset['instances']:
-            prediction = traverse_tree(tree, row)
-            actual = row[0]
-            # print(prediction + ' ' + actual)
-            if prediction == actual:
-                accuracy_count += 1
-
-        print("Accuracy = " + str(accuracy_count / len(test_dataset['instances'])))
-
-
 def traverse_tree(node, row):
     if 'class' in node:
         return node['class']
@@ -209,9 +185,9 @@ def traverse_tree(node, row):
         return traverse_tree(node['left'], row)
 
 
-def train():
+def train(train_file_path):
     #dataset = load_data(".\golf-test.dat")
-    dataset = load_data(".\hepatitis-training-run01.dat")
+    dataset = load_data(train_file_path)
     if dataset['instances']:
         root_node = get_best_split(dataset)
         # remove used attribute
@@ -219,9 +195,56 @@ def train():
     else:
         raise Exception('There is no instance in the root node.')
 
-    print_tree(root_node, '')
     return root_node
 
 
-# train() is included in test() now
-test()
+def test(tree, test_file_path):
+    test_dataset = load_data(test_file_path)
+
+    accuracy_count = 0
+    for row in test_dataset['instances']:
+        prediction = traverse_tree(tree, row)
+        actual = row[0]
+        # print(prediction + ' ' + actual)
+        if prediction == actual:
+            accuracy_count += 1
+
+    accuracy = accuracy_count / len(test_dataset['instances'])
+    print("Accuracy = " + str(accuracy))
+    return accuracy
+
+
+def calc_baseline(test_file_path):
+    node = load_data(test_file_path)
+    outcomes = [row[0] for row in node['instances']]
+    if len(outcomes) < 1:
+        raise Exception('training data does not have any instances')
+    majority_class = max(set(outcomes), key=outcomes.count)
+    prob = outcomes.count(majority_class) / len(outcomes)
+    print('Baseline classifier accuracy: ' + str(prob))
+    return prob
+
+
+# main function
+# Prepare input files
+should_display_tree = bool(int(sys.argv[1])) if len(sys.argv) > 1 else True
+run_count = int(sys.argv[2]) if len(sys.argv) > 2 else 0
+
+file_pathes = []
+accuracy_sum = 0.0
+
+if run_count == 0:
+    file_pathes.append([".\hepatitis-training.dat", ".\hepatitis-test.dat"])
+else:
+    for idx in range(1, run_count + 1):
+        file_pathes.append([".\hepatitis-training-run" + str(idx).zfill(2) + ".dat",
+                            ".\hepatitis-test-run" + str(idx).zfill(2) + ".dat"])
+# Train and Test
+for file_pair in file_pathes:
+    calc_baseline(file_pair[1])
+    tree = train(file_pair[0])
+    accuracy = test(tree, file_pair[1])
+    accuracy_sum += accuracy
+    if should_display_tree:
+        print_tree(tree, '')
+print('Average accuracy = ' + str(accuracy_sum / len(file_pathes)))

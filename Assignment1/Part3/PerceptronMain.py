@@ -1,5 +1,6 @@
 import random
 import textwrap
+import sys
 
 
 class Feature:
@@ -14,18 +15,18 @@ class Feature:
             self.row.append(random.randint(0, 9))
             self.col.append(random.randint(0, 9))
             self.sgn.append(random.randint(0, 1))
-            self.input = self.product_input()
+            self.input = self.produce_input()
 
-    def product_input(self):
+    def produce_input(self):
         # Special bias feature
         if self.image_data is None:
             return 1
 
-        sum = 0
+        sum_num = 0
         for i in range(len(self.row)):
             if int(self.image_data.pixels[self.row[i]][self.col[i]]) == self.sgn[i]:
-                sum += 1
-        if sum >= 3:
+                sum_num += 1
+        if sum_num >= 3:
             return 1
         else:
             return 0
@@ -51,7 +52,7 @@ def load_data(path):
             while line:
                 if line == 'P1':
                     image = Image()
-                    image.target = 1 if datafile.readline().rstrip() == '#Yes' else 0
+                    image.target = 1 if datafile.readline().rstrip() == '#X' else 0
                     image.width, image.height = datafile.readline().rstrip().split()
                     pixel_string = datafile.readline().rstrip() + datafile.readline().rstrip()
                     image.pixels = textwrap.wrap(pixel_string, 10)
@@ -68,7 +69,9 @@ def prep_features(image):
     bias = Feature(None)
     features = [bias]
     for x in range(num_of_features):
+        feature = Feature(image)
         features.append(Feature(image))
+        print("image feature " + str(x + 1) + ": " + str(feature.input))
 
     return features
 
@@ -89,13 +92,12 @@ def guess(features, weights):
     return sign(sum)
 
 
-def train(images, weights, k):
-    train_rate = 0.1
+def train(images, weights, k, max_cycles):
+    train_rate = 0.2
     hits = 0
 
     # Do not run the entire data set more than 100 times
-    if k > 100:
-        print("k = " + str(k))
+    if k > max_training_cycles:
         return k
 
     for image in images:
@@ -111,13 +113,14 @@ def train(images, weights, k):
         # Mission completed. All hit
         return k
     else:
+        print("Training cycle # = " + str(k) + ", Classification error count = " + str(len(images) - hits))
         # recursive
         k += 1
-        train(images, weights, k)
+        train(images, weights, k, max_cycles)
 
 
-def run():
-    images = load_data(".\image.data")
+def run(training_file, max_cycles):
+    images = load_data(training_file)
 
     for image in images:
         image.features = prep_features(image)
@@ -128,8 +131,13 @@ def run():
         weights.append(random.random())
 
     k = 0
-    train(images, weights, k)
-    print(weights)
+    train(images, weights, k, max_cycles)
+    print("weights:")
+    for w in weights:
+        print(w)
 
 
-run()
+# main function
+training_file_path = sys.argv[1] if len(sys.argv) > 1 else ".\image.data"
+max_training_cycles = int(sys.argv[2]) if len(sys.argv) > 2 else 100
+run(training_file_path, max_training_cycles)

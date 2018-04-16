@@ -1,0 +1,10 @@
+==Steps==
+* Open a Windows command line Console.
+* Navigate to the directory called "Part3"
+* Please run the follow command in the Windows console to see the output of Part3 Perceptron.
+python .\PerceptronMain.py '.\image.data' 100
+
+
+==Parameters==
+* Parameter 1 = training file path.
+* Parameter 2 = Max number of training cycles the programme will run.
